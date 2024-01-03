@@ -16,7 +16,7 @@ fn algo(map: &mut Vec<u8>, line_size: usize) {
     put_cross(&mut best_square, map, line_size);
 }
 
-fn put_cross(best_square: &mut BestSquare, map: &mut Vec<u8>, line_size: usize) {
+fn put_cross(best_square: &mut BestSquare, map: &mut [u8], line_size: usize) {
     for i in 0..best_square.size {
         for j in 0..best_square.size {
             let index = i * line_size + best_square.index + j;
