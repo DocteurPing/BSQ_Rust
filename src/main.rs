@@ -52,13 +52,8 @@ fn main() {
             // Remove the first line (remove elements up to the first '\n')
             data.drain(..newline_index + 1);
         }
-        let mut line_size = 0;
-        for (i, char) in data.iter().enumerate() {
-            if *char == b'\n' {
-                line_size = i + 1;
-                break;
-            }
-        }
+        // Get the size of a line (the first line is the same size as the others)
+        let line_size = data.iter().position(|&x| x == b'\n').unwrap_or(data.len()) + 1;
         algo(&mut data, line_size);
     }
 }
