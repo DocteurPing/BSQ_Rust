@@ -6,44 +6,37 @@ struct BestSquare{
     size: usize,
 }
 
-fn algo(map: &mut String, line_size: usize) {
+fn algo(map: &mut Vec<u8>, line_size: usize) {
     let mut best_square = BestSquare{index: 0, size: 0};
     for i in 0..map.len() {
-        if map.chars().nth(i).unwrap() == '.' {
+        if map[i] == b'.' {
             check_square_size(map, &mut best_square, line_size, i);
         }
     }
     put_cross(&mut best_square, map, line_size);
 }
 
-fn put_cross(best_square: &mut BestSquare, map: &mut String, line_size: usize) {
+fn put_cross(best_square: &mut BestSquare, map: &mut Vec<u8>, line_size: usize) {
     for i in 0..best_square.size {
         for j in 0..best_square.size {
             let index = i * line_size + best_square.index + j;
-            map.replace_range(index..index + 1, "x");
+            map[index] = b'X';
         }
     }
-    println!("{}", map);
+    println!("{}", String::from_utf8_lossy(map));
 }
 
-fn check_square_size(map: &str, best_square: &mut BestSquare, line_size: usize, index: usize) {
-    println!("Hello, world! {}", index);
+fn check_square_size(map: &Vec<u8>, best_square: &mut BestSquare, line_size: usize, index: usize) {
     let mut size = best_square.size + 1;
     loop {
         for i in 0..size {
             for j in 0..size {
-                if j >= line_size {
+                if i * line_size + j + index >= map.len() {
                     return;
                 }
-                match map.chars().nth(i * line_size + j + index) {
-                    None => { return; }
-                    Some(char) => {
-                        if char != '.' {
-                            return;
-                        }
-                    }
-                };
-
+                if map[i * line_size + j + index] != b'.' {
+                    return;
+                }
             }
         }
         best_square.size = size;
@@ -54,15 +47,18 @@ fn check_square_size(map: &str, best_square: &mut BestSquare, line_size: usize, 
 
 fn main() {
     if let Some(path) = env::args().nth(1) {
-        let mut data = fs::read_to_string(path).expect("Unable to read file");
-        if let Some(newline_index) = data.find('\n') {
-            // Remove the first line (substring after the first '\n')
-            data = data[(newline_index + 1)..].to_string();
+        let mut data = fs::read(path).expect("Unable to read file");
+        if let Some(newline_index) = data.iter().position(|&x| x == b'\n') {
+            // Remove the first line (remove elements up to the first '\n')
+            data.drain(..newline_index + 1);
         }
-        if let Some(newline_index) = data.find('\n') {
-            let line_size = data[..newline_index].len() + 1;
-            println!("line_size: {}", line_size);
-            algo(&mut data, line_size);
+        let mut line_size = 0;
+        for (i, char) in data.iter().enumerate() {
+            if *char == b'\n' {
+                line_size = i + 1;
+                break;
+            }
         }
+        algo(&mut data, line_size);
     }
 }
